@@ -30,4 +30,14 @@ export class UserMongoDAO {
         }
     }
 
+    async addCartToUser (mail, cid) {
+        try {
+            if(!mail || !cid) throw new Error('Los parametros para actualizar el usuario no estan completos')
+            let userCartUpdated = await User.updateOne({userMail: mail}, {$push: {userCart: {cartId: cid}}})
+            return userCartUpdated
+        }catch(err) {
+            throw new Error('No es posible agregar el carrito al usuario con mongoose ' + err)
+        }
+    }
+
 }

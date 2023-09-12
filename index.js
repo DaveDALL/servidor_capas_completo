@@ -15,6 +15,7 @@ import cartRouter from './src/routers/carts.router.js'
 import viewsRouter from './src/routers/views.router.js'
 import authRouter from './src/routers/auth.router.js'
 import githubRouter from './src/routers/github.router.js'
+import userRouter from './src/routers/user.router.js'
 import chatRouter from './src/routers/chat.router.js'
 import __dirname from './dirPath.js'
 const app = express()
@@ -52,6 +53,7 @@ initializePassportJwt()
 app.use('/api/products', productRouter)
 app.use('/api/carts', cartRouter)
 app.use('/', viewsRouter)
+app.use('/api/users', userRouter)
 app.use('/chat', chatRouter(io))
 
 //Auth Routers

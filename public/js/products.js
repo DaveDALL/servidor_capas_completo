@@ -2,7 +2,9 @@ let fetchingUrl = 'http://localhost:8080/api/products?limit=3&pageNum=1'
 let products = []
 let prevLinkPage = ' '
 let nextLinkPage = ' '
-let cartId = '64b522c4d5b51e2d98a0fa81'
+let cartId = undefined
+let mail = window.mail
+
 
 const fetchingData = async (Url) => {
     try {
@@ -10,12 +12,12 @@ const fetchingData = async (Url) => {
             let productsData = await response.json()
             return productsData
     }catch(err) {
-        console.log('No e posible realizar un fetch de los productos ',err)
+        console.log('No e posible realizar un fetch de los productos ',+ err)
     }
 }
 const fetchingNewCart = async () => {
     try {
-        let response = await fetch('http://localhost:8080/api/carts/cart', {
+        let response = await fetch('http://localhost:8080/api/carts/newCart', {
            method: 'POST',
            headers: {
             'Content-type': 'application/json'
@@ -47,10 +49,32 @@ const fetchingAddProductToCart = async (url, pid, qty) => {
     }
 }
 
-const addToCart = async (pid, status, stock) => {
+const fetchingAddCartToUser = async (url, mail, cid) => {
+    try {
+        let response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({
+                mail: mail,
+                cid: cid
+            })
+        })
+        let addingResponse = await response.json()
+        return addingResponse
+    }catch(err) {
+
+    }
+}
+
+const addToCart = async (pid, status, stock, mail) => {
     let qty = 1
+    let addCartUserUrl = 'http://localhost:8080/api/users/cartToUser'
     if(!cartId) {
         cartId = await fetchingNewCart()
+        let addedcart = await fetchingAddCartToUser(addCartUserUrl, mail, cartId)
+        console.log(addedcart)
     }
     let putUrl = `http://localhost:8080/api/carts/${cartId}`
     if(status && stock > 0) {
@@ -84,7 +108,7 @@ const productCardRender = async (payload) => {
         `
         productBox.append(productBlister)
         let addToCartButton = document.getElementById(code)
-        addToCartButton.addEventListener('click', () => addToCart(_id, status, stock))
+        addToCartButton.addEventListener('click', () => addToCart(_id, status, stock, mail))
     })
 }
 

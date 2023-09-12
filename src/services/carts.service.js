@@ -1,4 +1,5 @@
 import DAOS from '../dao/daos.factory.js'
+import ticketService from '../services/ticket.service.js'
 const { CartDAO } = DAOS
 
 const getCartByIdService = async (cid) => {
@@ -51,7 +52,7 @@ const delProductFromCartService = async (cid, pid) => {
 
 const deleteCartService = async (cid) => {
     try {
-        let deletedCartResult = await CartDAO.deleteCartbyId(cid)
+        let deletedCartResult = await CartDAO.deleteCartById(cid)
         if(deletedCartResult) {
             return deletedCartResult
         }else return {}
@@ -60,10 +61,21 @@ const deleteCartService = async (cid) => {
     }
 }
 
+const purchaseCartService = async (cid) => {
+    try {
+        let userCart = await CartDAO.getCartById(cid)
+        let { products } = userCart
+        
+    }catch(err) {
+
+    }
+}
+
 export default {
     getCartByIdService,
     newCartService,
     updateCartService,
     delProductFromCartService,
-    deleteCartService
+    deleteCartService, 
+    purchaseCartService
 }

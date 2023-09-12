@@ -5,6 +5,7 @@ let ProductDAO
 let CartDAO
 let UserDAO
 let ChatDAO
+let TicketDAO
 
 switch(DATA_SOURCE) {
     case "FILE": {
@@ -17,14 +18,16 @@ switch(DATA_SOURCE) {
         break
     }
     case "MONGO": {
-        const { ProductMongoDAO } = await import('../dao/mongoDAO/product.mongo.dao.js')
-        const { CartMongoDAO } = await import('../dao/mongoDAO/cart.mongo.dao.js')
-        const { UserMongoDAO } = await import('../dao/mongoDAO/user.mongo.dao.js')
+        const { ProductMongoDAO } = await import('./mongoDAO/product.mongo.dao.js')
+        const { CartMongoDAO } = await import('./mongoDAO/cart.mongo.dao.js')
+        const { UserMongoDAO } = await import('./mongoDAO/user.mongo.dao.js')
         const { MessageMongoDAO } = await import('./mongoDAO/chat.mongo.dao.js')
+        const { TicketMongoDAO } =await import('./mongoDAO/ticket.mongo.dao.js')
         ProductDAO = new ProductMongoDAO()
         CartDAO = new CartMongoDAO()
         UserDAO = new UserMongoDAO()
         ChatDAO = new MessageMongoDAO()
+        TicketDAO = new TicketMongoDAO()
         break
     }
     default: {
@@ -36,5 +39,6 @@ export default {
     ProductDAO,
     CartDAO,
     UserDAO,
-    ChatDAO
+    ChatDAO,
+    TicketDAO
 }

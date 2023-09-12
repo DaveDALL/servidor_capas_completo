@@ -15,8 +15,8 @@ const userLogoutController = (req, res) => {
 }
 
 const productViewController = (req, res) => {
-    let {userName, lastName, userRoll} = req.session
-    res.render('products', {name: userName, lastName: lastName, roll: userRoll})
+    let {userName, lastName, userMail, userRoll} = req.session
+    res.render('products', {name: userName, lastName: lastName, mail: userMail, roll: userRoll})
 }
 
 const cartViewController = (req, res) => {
