@@ -67,15 +67,21 @@ const purchaseCartService = async (cid) => {
         let {userMail, cartId} = userByCart
         let products = cartId.products
         let amount = 0
-        let stockProducts = products.map(product => {
-            let {productId, qty} = product
-            if(productId.stock >= qty) {
-                product.productId.stock = productId.stock - qty
-                amount += qty * productId.price
-                return product
+        let productWithStock = 
+        await products.map(async product => {
+            try{
+                let {productId, qty} = product
+                if(productId.stock >= qty) {
+                    product.productId.stock = productId.stock - qty
+                    amount += qty * productId.price
+                    await ProductDAO.updateProduct(product.productId)
+                }
+            }catch(err) {
+                console.log('Error al actualizar el producto en MongoDB' + err)
             }
         })
-        console.log(stockProducts)
+
+        console.log(stockProducts, amount)
         return stockProducts
     }catch(err) {
         console.log(err)

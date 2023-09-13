@@ -114,9 +114,11 @@ export class ProductMongoDAO {
 
     async updateProduct (productToUpdate) {
         try {
-            if(!productToUpdate.pid || !productToUpdate.code || !productToUpdate.title || !productToUpdate.description || !productToUpdate.thumbnails || !productToUpdate.price || !productToUpdate.stock || !productToUpdate.category)
+            let {_id, code, title, description, thumbnails, price, stock, category} = productToUpdate
+            if(!_id || !code || !title || !description || !thumbnails || !price || !stock || !category)
                 throw new Error('Los campos del producto enviado no se encuentran completos')
-            let productUpdatedResult = await Product.updateOne({_id: pid}, productToUpdate)
+            
+            let productUpdatedResult = await Product.updateOne({_id: _id}, productToUpdate)
             return productUpdatedResult
         }catch(err) {
             console.log('No es posible actualizar el producto en MongoDB con mongoose ' + err)
