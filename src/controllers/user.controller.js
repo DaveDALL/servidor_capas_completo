@@ -1,18 +1,17 @@
 import userService from '../services/user.service.js'
-const { addCartToUserService } = userService
+const { getUserByEmailService } = userService
 
-const addCartToUserController = async (req, res) => {
-    let {mail, cid} = req.body
-    console.log(mail, cid)
+const getUserByEmailController = async (req, res) => {
+    let {mail} = req.body
     try{
-        let addCartToUserResult = addCartToUserService(mail, cid)
-        res.status(200).send({status: 'success', payload: addCartToUserResult})
+        let getUserResult = await getUserByEmailService(mail)
+        res.status(200).send({status: 'success', payload: getUserResult})
     }catch(err) {
-        console.log('No es posible agregar el cart al usuario con el servicio ' + err)
-        res.status(204).send({status: 'error', error: 'No es posible agregar el cart al usuario con el servicio '})
+        console.log('No es posible obtener al usuario con el servicio ' + err)
+        res.status(204).send({status: 'error', error: 'No es posible obtener al usuario con el servicio '})
     }
 }
 
 export default {
-    addCartToUserController
+    getUserByEmailController
 }

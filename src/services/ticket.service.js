@@ -12,3 +12,7 @@ const createTicketService = async (cid) => {
         throw new Error('No fue posible crear el ticket con el servicio ')
     }
 }
+
+export default {
+    createTicketService
+}

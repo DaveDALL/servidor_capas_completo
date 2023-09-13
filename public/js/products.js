@@ -1,10 +1,11 @@
 let fetchingUrl = 'http://localhost:8080/api/products?limit=3&pageNum=1'
+let getUserUrl = 'http://localhost:8080/api/users/currentUser'
 let products = []
 let prevLinkPage = ' '
 let nextLinkPage = ' '
+let userGot = {}
 let cartId = undefined
 let mail = window.mail
-
 
 const fetchingData = async (Url) => {
     try {
@@ -13,20 +14,6 @@ const fetchingData = async (Url) => {
             return productsData
     }catch(err) {
         console.log('No e posible realizar un fetch de los productos ',+ err)
-    }
-}
-const fetchingNewCart = async () => {
-    try {
-        let response = await fetch('http://localhost:8080/api/carts/newCart', {
-           method: 'POST',
-           headers: {
-            'Content-type': 'application/json'
-          }
-        })
-        let newCartResponse = await response.json()
-        return newCartResponse.payload._id
-    }catch(err) {
-        console.log('no es posible crear el cart '+ err)
     }
 }
 
@@ -49,7 +36,8 @@ const fetchingAddProductToCart = async (url, pid, qty) => {
     }
 }
 
-const fetchingAddCartToUser = async (url, mail, cid) => {
+const fetchingUser = async (url) => {
+    console.log(url, mail)
     try {
         let response = await fetch(url, {
             method: 'POST',
@@ -57,25 +45,20 @@ const fetchingAddCartToUser = async (url, mail, cid) => {
                 'Content-type': 'application/json; charset=UTF-8'
             },
             body: JSON.stringify({
-                mail: mail,
-                cid: cid
+                mail: mail
             })
         })
-        let addingResponse = await response.json()
-        return addingResponse
+        let getUser = await response.json()
+        return getUser
     }catch(err) {
-
+        console.log(err)
     }
 }
 
-const addToCart = async (pid, status, stock, mail) => {
+const addToCart = async (pid, status, stock) => {
     let qty = 1
-    let addCartUserUrl = 'http://localhost:8080/api/users/cartToUser'
-    if(!cartId) {
-        cartId = await fetchingNewCart()
-        let addedcart = await fetchingAddCartToUser(addCartUserUrl, mail, cartId)
-        console.log(addedcart)
-    }
+    let {payload} = userGot
+    cartId = payload[0].cartId
     let putUrl = `http://localhost:8080/api/carts/${cartId}`
     if(status && stock > 0) {
         let productAdded = await fetchingAddProductToCart(putUrl, pid, qty)
@@ -108,12 +91,13 @@ const productCardRender = async (payload) => {
         `
         productBox.append(productBlister)
         let addToCartButton = document.getElementById(code)
-        addToCartButton.addEventListener('click', () => addToCart(_id, status, stock, mail))
+        addToCartButton.addEventListener('click', () => addToCart(_id, status, stock))
     })
 }
 
-const productsRender = async (Url) => {
-    let productsData = await fetchingData(Url)
+const productsRender = async (Url1, url2) => {
+    let productsData = await fetchingData(Url1)
+    userGot = await fetchingUser(url2)
     let {payload, hasPrevPage, hasNextPage, prevLink, nextLink} = productsData
     productCardRender(payload)
     prevLinkPage = prevLink
@@ -131,6 +115,8 @@ async function prevPage(prevLink) {
 }
 
 function viewCart() {
+    let {payload} = userGot
+    cartId = payload[0].cartId
     let cartUrl = `http://localhost:8080/carts/${cartId}`
     if(!cartId) {
         alert('El carrito se encuentra vacio')
@@ -139,7 +125,7 @@ function viewCart() {
     }
 }
 
-productsRender(fetchingUrl)
+productsRender(fetchingUrl, getUserUrl)
 
 let prevButton = document.getElementById("prevButton")
 prevButton.addEventListener('click', () => prevPage(prevLinkPage))

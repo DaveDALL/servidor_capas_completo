@@ -18,9 +18,9 @@ export class UserMongoDAO {
         }
     }
 
-    async getUserByEmail (userMail) {
+    async getUserByEmail (mail) {
         try {
-            let foundUser = await User.find({userMail: userMail})
+            let foundUser = await User.find({userMail: mail})
             if(foundUser.length > 0) {
                 return foundUser
             }else return []
@@ -30,14 +30,12 @@ export class UserMongoDAO {
         }
     }
 
-    async addCartToUser (mail, cid) {
-        try {
-            if(!mail || !cid) throw new Error('Los parametros para actualizar el usuario no estan completos')
-            let userCartUpdated = await User.updateOne({userMail: mail}, {$push: {userCart: {cartId: cid}}})
-            return userCartUpdated
+    async getUserByCart (cid) {
+        try{
+            let userByCart = await User.findOne({"cartId": cid})
+            return userByCart
         }catch(err) {
-            throw new Error('No es posible agregar el carrito al usuario con mongoose ' + err)
+            console.log(err)
         }
     }
-
 }

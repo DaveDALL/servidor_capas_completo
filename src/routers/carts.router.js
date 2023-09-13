@@ -4,7 +4,7 @@ import cartController from '../controllers/carts.controller.js'
 import userRollController from '../controllers/userRollValid.controller.js'
 const { Router } = express
 const router = new Router()
-const {getCartByIdController, newCartController, updateCartController, delProductFromCartController, deleteCartController} = cartController
+const {getCartByIdController, newCartController, updateCartController, delProductFromCartController, deleteCartController, purchaseCartController} = cartController
 const { isUserRollValid } = userRollController
 
 router.get('/:cid', passport.authenticate('jwtAuth', {session:false}), isUserRollValid, getCartByIdController)
@@ -16,6 +16,8 @@ router.put('/:cid', passport.authenticate('jwtAuth', {session:false}), isUserRol
 router.delete('/:cid/products/:pid', passport.authenticate('jwtAuth', {session:false}), isUserRollValid, delProductFromCartController)
 
 router.delete('/cart/:cid', passport.authenticate('jwtAuth', {session:false}), isUserRollValid, deleteCartController)
+
+router.post('/:cid/purchase', purchaseCartController)
 
 export default router
 

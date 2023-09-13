@@ -1,6 +1,6 @@
 import DAOS from '../dao/daos.factory.js'
 import ticketService from '../services/ticket.service.js'
-const { CartDAO } = DAOS
+const { CartDAO, ProductDAO, UserDAO } = DAOS
 
 const getCartByIdService = async (cid) => {
     try {
@@ -63,11 +63,22 @@ const deleteCartService = async (cid) => {
 
 const purchaseCartService = async (cid) => {
     try {
-        let userCart = await CartDAO.getCartById(cid)
-        let { products } = userCart
-        
+        let userByCart = await UserDAO.getUserByCart(cid)
+        let {userMail, cartId} = userByCart
+        let products = cartId.products
+        let amount = 0
+        let stockProducts = products.map(product => {
+            let {productId, qty} = product
+            if(productId.stock >= qty) {
+                product.productId.stock = productId.stock - qty
+                amount += qty * productId.price
+                return product
+            }
+        })
+        console.log(stockProducts)
+        return stockProducts
     }catch(err) {
-
+        console.log(err)
     }
 }
 

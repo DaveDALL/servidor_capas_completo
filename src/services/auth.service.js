@@ -4,7 +4,7 @@ import encrypt from '../../config/bcrypt.js'
 import config from '../../config/config.env.js'
 import { UserDTO } from '../dto/user.dto.js'
 const { passHashing, validatePass } =encrypt
-const { UserDAO } = DAOS
+const { UserDAO, CartDAO } = DAOS
 const { SECRET, ADMIN_NAME, ADMIN_MAIL, ADMIN_PASS, ADMIN_ROLL } = config
 
 let adminUser = {
@@ -21,12 +21,13 @@ const authRegistrationService = async (user) => {
             let foundUser = await UserDAO.getUserByEmail(userMail)
             if(foundUser.length <= 0) {
                 let hashedPassword = passHashing(userPassword)
+                let createdCart = await CartDAO.createCart()
                 let createdUser = {
                     userName,
                     lastName,
                     userMail,
                     userPassword: hashedPassword,
-                    cartId: [],
+                    cartId: createdCart._id,
                     userRoll: 'usuario'
                 }
                 let createdUserResult = await UserDAO.createUser(createdUser)
@@ -50,6 +51,7 @@ const authLoginService = async (user) => {
             isValidPass = true
         }else {
             foundUser = await UserDAO.getUserByEmail(userMail)
+            
             isValidPass = validatePass(userPassword, foundUser[0].userPassword)
         }
         if(foundUser.length > 0) {

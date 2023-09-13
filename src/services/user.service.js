@@ -1,18 +1,18 @@
 import DAOS from '../dao/daos.factory.js'
 const { UserDAO } = DAOS
 
-const addCartToUserService = async (mail, cid) => {
+const getUserByEmailService = async (mail) => {
     try {
-        let addCartToUserResult = await UserDAO.addCartToUser(mail, cid)
-        if(addCartToUserResult) {
-            return addCartToUserResult
-        } else return {}
+        let getUserResult = await UserDAO.getUserByEmail(mail)
+        if(getUserResult.length > 0) {
+            return getUserResult
+        } else return []
     }catch(err) {
-        console.log('Error al agregar el cart al usuario '+ err)
-        throw new Error('Error al agregar el cart al usuario ')
+        console.log('Error al obtener al usuario con mongoose '+ err)
+        throw new Error('Error al obtener al usuario con mongoose ')
     }
 }
 
 export default {
-    addCartToUserService
+    getUserByEmailService
 }

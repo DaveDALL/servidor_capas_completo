@@ -7,18 +7,19 @@ const ticketSchema = new mongoose.Schema({
         unique: true,
     },
     amount: {
-        tyte: Number,
-        required:true,
+        type: Number,
+        required: true,
     },
     purchaser: {
         type: String,
-        required:true
-    },
-    timestamps: {
-        createdAt: 'purchaseDate',
-        updatedAt: false
+        required: true,
     }
-    
+},
+{
+    timestamps: {
+        createdAt: 'purchase_datetime',
+        updatedAt: false,
+    }
 })
 
 const Ticket = mongoose.model('Ticket', ticketSchema)

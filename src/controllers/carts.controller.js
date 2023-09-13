@@ -1,5 +1,5 @@
 import cartService from '../services/carts.service.js'
-const {getCartByIdService, newCartService, updateCartService, delProductFromCartService, deleteCartService} = cartService
+const {getCartByIdService, newCartService, updateCartService, delProductFromCartService, deleteCartService, purchaseCartService} = cartService
 
 const getCartByIdController = async (req, res) => {
     let {cid} = req.params
@@ -57,11 +57,22 @@ const deleteCartController = async (req, res) => {
     }
 }
 
+const purchaseCartController = async (req, res) => {
+    let {cid} = req.params
+    try{
+        let userByCart = await purchaseCartService(cid)
+        res.send(userByCart)
+    }catch(err) {
+        console.log(err)
+    }
+}
+
 
 export default {
     getCartByIdController,
     newCartController,
     updateCartController,
     delProductFromCartController,
-    deleteCartController
+    deleteCartController,
+    purchaseCartController
 }

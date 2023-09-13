@@ -1,12 +1,5 @@
 import mongoose from 'mongoose'
 
-const userCartSchema = new mongoose.Schema({
-    cartId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cart'
-    }
-})
-
 const userSchema = new mongoose.Schema({
     userName: {
         type: String,
@@ -27,17 +20,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
-    userCart: {
-        type:[userCartSchema]
+    cartId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Cart'
     },
     userRoll : {
         type: String,
         required: true,
     }
+},
+{
+    strictPopulate: false
 })
 
 userSchema.pre('findOne', function () {
-    this.populate('carts.cartId')
+    this.populate('cartId').populate({
+        path: 'cartId',
+        populate: [
+            {path: 'products.productId'}
+        ]
+    })
 })
 
 const User = mongoose.model('User', userSchema)
