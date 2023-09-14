@@ -1,38 +1,61 @@
 # SERVIDOR EN CAPAS COMPLETO CON TICKETS
 
-El propósito de este proyecto es realizar un servidor un servidor por capas.
+El propósito de este proyecto es realizar un servidor completo por capas.
 
-En primer lugar se establece una capa de conexión a base de datos llamada DAO, la cual tiene el proporsito de realizar la conexión hacia MongoDB, a través del URL que se obstiene mediante MongoDB.
+En primer lugar se establece una capa de conexión a base de datos llamada db, la cual tiene el proporsito de realizar la conexión hacia MongoDB, a través del URL que se obstiene mediante MongoDB.
 
-El en segundo plano se establece la capa de modelo que se encarga de definir los modelos para:
+En la segunda capa se encuentra el DAO, el cual es seleccionado a través del sistema de **Factory**, donde se selecciona el DAO a emplear, ya sea por File System el cual tiene por nombre FileDAO, o a traves de la base de datos MongoDB, el cual se llama mongoDAO.
+
+Por default se encuentra seleccionada la opción de usar el mongoDAO a través de las variables de .env. Tomar encuenta que si se cambia el DAO hacia FileDAO, no esta completo uso de las clases para usar un DAO con File System, y solo se usa amanera de representación de la posibilidad de hacer la selección.
+
+En el tercer plano se establece la capa de modelo que se encarga de definir los modelos para:
     
     - Usuarios
     - Productos
     - Carts
+    - mensajes del Chat
+    - Ticket de compra
 
-Se modelan los esquemas de los datos que se agrgaran a la base detos y a través de estos mismos se realiza la solcitud de datos a la DB.
+Se modelan los esquemas de los datos que se agragaran a la base detos y a través de estos mismos se realiza la solcitud de datos a la DB.
 
-El tercer plano se integra un capa de servicios, la cual se encarga de la lógica para realizar la gestión hacia la base de datos de:
+Dentro del modelado de datos se incorpora en los modelos de carts, users y ticket el uso de **populate**, mendiante el método **findOne**, a fin de hacer una referencia usando los ID's de productos, y obtener la información completa de cada producto. Este tipo de referencias se realiza para no sbrecargar de información en cada colección de la base de datos.
 
-1. Autenticación de usuarios: Dentro de este servicio se realiza el registro y proceso de login del usuario, ya que realiza la la lógica de gestion y la conexión mediante el modelo correspondiente
+El cuarto plano se integra un capa de servicios, la cual se encarga de la lógica para realizar la gestión hacia la base de datos de:
+
+1. Autenticación de usuarios: Dentro de este servicio se realiza el registro y proceso de login del usuario, ya que realiza la la lógica de gestion y la conexión mediante el modelo correspondiente. **Es importante hacer notar que al momento de crear el usuario, también se crea un cart de compra, esto con fin de asociar el usuario con el carrito de compra desde un incio**.
 
 2.  Productos: Se encarga de realizar la conexión hacia la DB mediante el modelo de products, y se tendrá la lógica para poder agregar un productos nuevo, o solicitar una contidad de productos de acuerdo a un limite o paginación, también se puede realizar la solicitud de un productos por su id, o borrar un producto.
 
-3. Cart: De la misma forma que en el servicio de productos, en este servicio se establece la lógica y gestion hacia la DB, a través del modelo; para realizar la creación de un carrito nuevo de compra, agregar productos a un carrito ya creado, borrar productos del carrito, modficar la cantidad el producto ya agregado y borrar el carrito de compra
+3. Cart: De la misma forma que en el servicio de productos, en este servicio se establece la lógica y gestion hacia la DB, a través del modelo; para realizar la creación de un carrito nuevo de compra, agregar productos a un carrito ya creado, borrar productos del carrito, modficar la cantidad el producto ya agregado y borrar el carrito de compra. 
 
-En la cuarta capa se tienen los controladores, que se encargan de hacer la integración de la capa de servicios hacia los routers.
+Además a través del servicio de carts, se puede realizar el proceso de la compra mediante el métodp de purchaseCartService; donde se realizan los procesos de:
+
+    - Disminución del Stock de producto
+    - Eliminar el producto con existencia de cart
+    - Separar los IDs de productos que no cuentan con stock suficiente
+    - Generación del ticket de compra
+
+La ruta de acceso a este endpoint de servicio es através de la ruta de desarrollo:
+
+[http://localhost:(puerto)/api/carts/(cid)/purchase]
+
+donde puerto, es el puerto http donde esta operando el servidor, y cid es el ID del cart del usuario.
+
+En este endpoint se usa el método POST para poder realizar el proceso, devolviendo como payload, el ticket y un arreglo de IDs productos sin stock suficiente.
+
+En la quinta capa se tienen los controladores, que se encargan de hacer la integración de la capa de servicios hacia los routers.
 
 1. Controlador de autenticación de usuarios: Se encarga de realizar la toma de los datos que se entregan por el servicio de autenticación y realizar el direccionamiento correspondiente, ya se hacia el login o hacia los productos una vez que el usuario se haya autenticado correctamente.
 
 2. Controlador de productos: Se encarga recibir los datos entregados por el servicio de productos y entregarlos, si asi es el caso hacia los routers. Por otro lado, también encarga de recibir los datos ya sea por los request de body, params o query, entregarlos hacia el servicio y posteriormente se envien hacia la base de datos.
 
-3. Controlador de Carts: De la misma forma que con el de productos, se integran los servicios del cart hacia el router. De taforma que se reciban los datos del servicio, o se entreguen la información recibida por los request de body, o params.
+3. Controlador de Carts: De la misma forma que con el de productos, se integran los servicios del cart hacia el router. De taforma que se reciban los datos del servicio, o se entreguen la información recibida por los request de body, o params; y realizar el proceso de compra.
 
 4. Controlador de vistas: Se encarga de realiza los redirecionamiento correspondiente hacia las vista solicitada mediante el router de vistas.
 
 5. Controlador de github: Se encarga de hacer la gestion mediante la configuración para github que hace la gestion del usuario registrado en github y poderse autenticar. El controlador se encarga de almacenar en sesion los datos de usuario y enviar un token hacia el router de autenticación.
 
-En la quinta capa, esta los routers que se encargar del manejo de los métodos que usaran los endpoints para la entrega o recepción de datos; o para a las vista.
+En la sexta capa, esta los routers que se encargar del manejo de los métodos que usaran los endpoints para la entrega o recepción de datos; o para hacer el direccionamiento hacia las vista.
 
 ## EXPRESS SESSION
 
@@ -87,6 +110,15 @@ Además, se implementa una vista de autenticación para realizar:
     
 - Registro de usuario. De igual forma se usa un formulario con método POST hacia el endpoint de **/authRegistration**, donde se hace el registro de usuario hacia la base de datos.
 
+
+## WEBSOCKETS
+
+Se usará la aplicación de sockets.io para realizar la comunicación a través de http 8080. Del lado del servidor se crea un router que contendrá en endpoint GET, llamado **chat.router.js** como función que recibirá desde el index.js del servidor, ubicado en la ruta raíz, la constante **io** que recibe **socket.io**. 
+
+En el endpoint, se realiza la recepción del mensaje enviado por el cliente medinate el evento **chatMessage**, este mensage se almacena en un array llamado **allMessages**, donde se realuzará el push de los mensajes envien los clientes; posteriormente se emitirá a los clientes, mediante el evento **allMessages**, para mostrar el seguimiento de los mensajes. Una vez cerrada la conexión por parte de cliente mediante el botón de **Finalizr chat** que dispara la función **socket.disconnect()** del lado del cliente, se almacenarán los mensajes en el mongoDB Atlas, en una colleción llamada messages.
+
+Por el lado del cliente, socket.io, se instala mediante el uso del script **<script src="/socket.io/socket.io.js"></script>**, colocado en el archivo de chat.handlebars.js; por otro lado se usa el archivo **chat.js** para realizar la lógica de programación, para instanciar socket.io mediante la constante **socket**,  recibir los datos del formulario, formateo y creación del objeto de messaging, y emisión hacia el servidor mediante el evento **chatMessage** enviando el objeto messaging. También se realiza la función para recibir el evento **allMessages** enviado por el servidor con el arreglo de los mensajes a cumulados, y relizar el render de la vista de los mensajes; y la función para deconexión del cliente y poder enviar los mensajes acumulados a la base de datos mongoDB Atlas en la colección messages.
+
 ## EXPRESS ROUTER
 
 Mediante el uso de Routers de express, se crean los endopint para products y carts. 
@@ -119,7 +151,7 @@ userName: {
         trim: true,
     },
     cartId : {
-        type:[cartIdSchema]
+        type: String
     },
     userRoll : {
         type: String,
@@ -198,6 +230,7 @@ Si el pid no exite, se agregará al cart el producto junto con su cantidad en la
 
 - POST para borrar un producto del cart, en la ruta **/:cid/delproduct/:pid**. Mediante este endpint se elimará un producto del documento de cart de la colección carts de Atlas.
 - DELETE para borrar un cart de la colección carts, en la ruta **/delcart/:cid**, el endpoint eliminará el documento cart de la colección carts.
+
 
 ## MONGOOSE
 
@@ -279,9 +312,125 @@ asi mismo este esquema se lleva al esquema de carts de la siguiente forma:
 Además dentro del esquema de productos se integra la paginación mediante el uso del plugin mongoose aggregate paginate v2.
 con aggregate se podran hacer los stages para poder establecer un limite, ordenar por precio, y filtrado por categoria o existencia
 
+El esquema de usuario queda de la siguiente forma:
+
+```javascript
+
+const userSchema = new mongoose.Schema({
+    userName: {
+        type: String,
+        trim: true,
+        required: true,
+    },
+    lastName: {
+        type: String,
+        trim: true,
+    },
+    userMail: {
+        type: String,
+        trim: true,
+        required: true,
+        unique: true,
+    },
+    userPassword: {
+        type: String,
+        trim: true,
+    },
+    cartId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Cart'
+    },
+    userRoll : {
+        type: String,
+        required: true,
+    }
+},
+{
+    strictPopulate: false
+})
+
+userSchema.pre('findOne', function () {
+    this.populate('cartId').populate({
+        path: 'cartId',
+        populate: [
+            {path: 'products.productId'}
+        ]
+    })
+})
+
+```
+
+El esquema de mensajes queda de la siguiente forma:
+
+```javascript
+
+const messageTypeSchema = new mongoose.Schema({
+    user: {
+        type: String
+    },
+    message: {
+        type: String
+    }
+})
+const messageSchema = new mongoose.Schema({
+    messages: {
+        type: [messageTypeSchema]
+    }
+})
+
+```
+
+Y finalmente el esquema de tickets:
+
+```javascript
+
+const ticketProductSchema = new mongoose.Schema({
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    },
+    qty: {
+        type: Number
+    },
+    subtotal: {
+        type: Number
+    }
+})
+
+const ticketSchema = new mongoose.Schema({
+    code: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    buyedProducts: {
+        type: [ticketProductSchema]
+    },
+    amount: {
+        type: Number,
+        required: true,
+    },
+    purchaser: {
+        type: String,
+        required: true,
+    }
+},
+{
+    timestamps: {
+        createdAt: 'purchase_datetime',
+        updatedAt: false,
+    }
+})
+
+```
+
+En el esquema de tickets, se utiliza **timestamps** para poder tener la fecha y hora de creación del ticket de compra. De acuerdo la la documentación el horario almacenado es en UTC, y finalmente **node js, realiza el ajuste de la zona horaria de acuerdo a la zona del servidor**. 
+
+
 ## BCRYPT
 
 Se realiza la integración de bcrypt, a fin de realizar un hasheo de la contraseña del usuario, en **/util/bcrypt**, donde se implementan las funciones para realizar la encriptación de la contraseña de usuario, y  para realizar la comparación de la contraseña introducida por el usuario, contra la contraseña registrada en MondoDB, la cual se encuentra encriptada.
+
 
 ## PASSPORT, PASSPORT-GITHUB2 Y PASSPORT-JWT
 
@@ -343,6 +492,14 @@ const cookieExtractor = (req) => {
 }
 
 ```
+
+Mediante el uso del paso del payload de jwt, y mediante el request es posible obtener la información que se encripto mediante JWT; para esto a fin de evitar el uso de infomación sensible, en el token se encripta solo el correo del usuario y el rol.
+
+Entonces, para poder realizar la autorización del uso de un endpoint ya se por parte del usuario o del administrador,  se crea un middleware, que indica si el roll es de usuario o administrador y con esto autorizar el uso del endpoint.
+
+**Por el momento el endpoint del proceso de compra no se esta usando la autorización del usuario, a fin de poder realizar pruebas para el ticket y el arregode IDs de productos sin stock**
+
+
 
 Durante el proceso de login, se crea la cookie empleando **cookie-paser** y el token del usuario mediante JWT, meante el usu de un 'secreto', el cual tiene que coincidir con el de que usa en la estrategia de JWT, el cual se incializa en el index.js principal. 
 
