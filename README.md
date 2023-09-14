@@ -1,4 +1,4 @@
-# RESTRUCTURA DEL SERVIDOR EN CAPAS
+# SERVIDOR EN CAPAS COMPLETO CON TICKETS
 
 El propósito de este proyecto es realizar un servidor un servidor por capas.
 

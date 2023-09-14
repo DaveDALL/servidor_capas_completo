@@ -67,22 +67,29 @@ const purchaseCartService = async (cid) => {
         let {userMail, cartId} = userByCart
         let products = cartId.products
         let amount = 0
-        let productWithStock = 
+        let ticket = {}
+        let productsInStock = []
+        let productsOutStock = []
         await products.map(async product => {
             try{
                 let {productId, qty} = product
                 if(productId.stock >= qty) {
                     product.productId.stock = productId.stock - qty
                     amount += qty * productId.price
+                    productsInStock.push({productId: productId._id, qty: qty, subtotal: qty * productId.price})
                     await ProductDAO.updateProduct(product.productId)
-                }
+                    await CartDAO.deleteProductFromCart(cartId, productId._id)
+                } else productsOutStock.push(productId._id)
             }catch(err) {
                 console.log('Error al actualizar el producto en MongoDB' + err)
             }
         })
-
-        console.log(stockProducts, amount)
-        return stockProducts
+        let ticketCreated = await ticketService.createTicketService(productsInStock, amount, userMail)
+        if(ticketCreated) {
+            ticket = await ticketService.getTicketbyId(ticketCreated._id)
+        }
+        let createdTicketResult = {ticket, productsOutStock}
+        return createdTicketResult
     }catch(err) {
         console.log(err)
     }

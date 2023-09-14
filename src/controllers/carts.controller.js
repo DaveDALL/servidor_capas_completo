@@ -61,7 +61,7 @@ const purchaseCartController = async (req, res) => {
     let {cid} = req.params
     try{
         let userByCart = await purchaseCartService(cid)
-        res.send(userByCart)
+        res.status(200).send({status: 'success', payload: userByCart})
     }catch(err) {
         console.log(err)
     }
